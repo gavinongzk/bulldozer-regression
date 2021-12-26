@@ -104,9 +104,7 @@ def main():
                 "Download",
                 convert_df(result_df),
                 "result.csv",
-                "text/csv",
-                key='download-csv'
-            )
+                "text/csv")
 
 if __name__ == '__main__':
     main()
