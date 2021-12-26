@@ -100,11 +100,5 @@ def main():
             result_df["SalesPrice"] = result
             st.dataframe(pd.DataFrame(result_df))
 
-            st.download_button(
-                "Download",
-                convert_df(result_df),
-                "result.csv",
-                "text/csv")
-
 if __name__ == '__main__':
     main()
