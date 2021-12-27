@@ -9,6 +9,7 @@ warnings.filterwarnings('ignore')
 
 # Load model
 
+@st.cache
 def load_data(csv_filepath="data/Test.csv"):
 
     df = pd.read_csv(csv_filepath, low_memory=False,
@@ -104,10 +105,10 @@ def result_df_download(input_df, result):
         "result.csv",
         "text/csv")
 
+@st.cache
 def display_profile_report(df):
     pr = ProfileReport(df)
     st_profile_report(pr)
-
 
 
 def main():
