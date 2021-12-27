@@ -9,7 +9,6 @@ warnings.filterwarnings('ignore')
 
 # Load model
 
-@st.cache
 def load_data(csv_filepath="data/Test.csv"):
 
     df = pd.read_csv(csv_filepath, low_memory=False,
@@ -18,7 +17,6 @@ def load_data(csv_filepath="data/Test.csv"):
     return df
 
 
-@st.cache
 def preprocess_data(df):
     '''
     Performs transformation
@@ -54,7 +52,6 @@ def preprocess_data(df):
 
     return df
 
-@st.cache
 def convert_df(df):
    return df.to_csv().encode('utf-8')
 
