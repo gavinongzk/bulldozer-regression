@@ -104,7 +104,7 @@ def result_df_download(input_df, result):
         "result.csv",
         "text/csv")
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def display_profile_report(df):
     pr = ProfileReport(df)
     st_profile_report(pr)
