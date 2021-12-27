@@ -58,6 +58,7 @@ def preprocess_data(df):
 def convert_df(df):
    return df.to_csv().encode('utf-8')
 
+@st.cache
 def project_info_text():
     st.write("""
         # Predicting the Sale Price of Bulldozers using ML
@@ -105,7 +106,7 @@ def result_df_download(input_df, result):
         "result.csv",
         "text/csv")
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def display_profile_report(df):
     pr = ProfileReport(df)
     st_profile_report(pr)
