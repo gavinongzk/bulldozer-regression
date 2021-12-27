@@ -58,7 +58,7 @@ def preprocess_data(df):
 def convert_df(df):
    return df.to_csv().encode('utf-8')
 
-@st.cache
+
 def project_info_text():
     st.write("""
         # Predicting the Sale Price of Bulldozers using ML
@@ -106,24 +106,14 @@ def result_df_download(input_df, result):
         "result.csv",
         "text/csv")
 
-@st.cache(suppress_st_warning=True)
-def display_profile_report(df):
-    pr = ProfileReport(df)
-    st_profile_report(pr)
-
 
 def main():
     choice = st.sidebar.radio("Select action:",
-                                  options=["Project Info", "Exploratory Data Analysis (EDA)", "Predict with ML model"])
+                                  options=["Project Info", "Predict with ML model"])
 
     if choice == "Project Info":
         project_info_text()
 
-    if choice == "Exploratory Data Analysis (EDA)":
-        df = load_data()
-        display_profile_report(df)
-
-        st.write("---")
     if choice == "Predict with ML model":
         small_model = pickle.load(open("./model/small_model.pkl", "rb"))
 
