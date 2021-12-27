@@ -7,7 +7,7 @@ warnings.filterwarnings('ignore')
 
 # Load model
 
-def load_data(csv_filepath="data/sample.csv"):
+def load_data(csv_filepath="data/Test.csv"):
 
     df = pd.read_csv(csv_filepath, low_memory=False,
                           parse_dates=["saledate"])
@@ -112,13 +112,13 @@ def main():
     if choice == "Predict with ML model":
         small_model = pickle.load(open("./model/small_model.pkl", "rb"))
 
-        df = load_data("data/sample.csv")
+        df = load_data()
 
         # Predict with test data
-        st.write("### Predicting with test data")
-        st.dataframe(df)
-        if st.button("Predict with test"):
-           result = small_model.predict(preprocess_data(df))
+        st.write("### Predicting with sample data")
+        st.dataframe(df.head(1))
+        if st.button("Predict with sample"):
+           result = small_model.predict(preprocess_data(df).head(1))
            st.success(f"Predicted Sales Price: ${result[0]:.2f}")
         st.write("---")
 
@@ -127,7 +127,7 @@ def main():
 
         def user_file_operation():
 
-            file_path = "./data/sample.csv"
+            file_path = "./data/Test.csv"
 
             with open(file_path, 'rb') as my_file:
                 st.download_button(label='Download sample CSV', data=my_file, file_name='sample.csv',
