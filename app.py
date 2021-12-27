@@ -2,31 +2,19 @@ import streamlit as st
 import pickle
 import pandas as pd
 import warnings
+from pandas_profiling import ProfileReport
+from streamlit_pandas_profiling import st_profile_report
 
 warnings.filterwarnings('ignore')
 
-st.write("""
-# Predicting the Sale Price of Bulldozers using ML
-In this notebook, we're going to predict the sales price of bulldozers.
-
-## Features
-Kaggle provides a data dictionary detailing all of the features of the dataset. You can view it here: https://docs.google.com/spreadsheets/d/1_fSxZuMwTByx5oD6se1Ji1EUezIdCtfmJi6e7ltDw-0/edit#gid=590674478
-""")
-
-st.write("---")
-
-
-
 # Load model
 
-
-@st.cache
 def load_data(csv_filepath="data/Test.csv"):
 
-    df_test = pd.read_csv(csv_filepath, low_memory=False,
+    df = pd.read_csv(csv_filepath, low_memory=False,
                           parse_dates=["saledate"])
 
-    return df_test
+    return df
 
 
 @st.cache
@@ -69,36 +57,107 @@ def preprocess_data(df):
 def convert_df(df):
    return df.to_csv().encode('utf-8')
 
+def project_info_text():
+    st.write("""
+        # Predicting the Sale Price of Bulldozers using ML
+
+        In this notebook, we're going to predict the sales price of bulldozers.
+        
+        ## 1. Problem definition
+        
+        > How well can we predict the future sale price of a bulldozer, given its attributes and historical sales of bulldozers at auctions
+        
+        ## 2. Data
+        
+        The data is downloaded from the Kaggle Bluebook for Bulldozers competition:
+        
+        There are 3 main datasets:
+        
+        * Train.csv is the training set, which contains data through the end of 2011.
+        * Valid.csv is the validation set, which contains data from January 1, 2012 - April 30, 2012.
+        * Test.csv is the test set, which contains data from May 1, 2012 - November 2012.
+        
+        ## 3. Evaluation
+        
+        The evaluation metric for this competition is the RMSLE (root mean squared log error) between the actual and predicted auction prices.
+        
+        For more information on the evaluation of this project check:
+        https://www.kaggle.com/c/bluebook-for-bulldozers/data
+        
+        
+        ## 4. Features
+        
+        Kaggle provides a data dictionary detailing all of the features of the dataset. You can view it here:
+        https://docs.google.com/spreadsheets/d/1_fSxZuMwTByx5oD6se1Ji1EUezIdCtfmJi6e7ltDw-0/edit#gid=590674478
+
+        """)
+
+def result_df_download(input_df, result):
+    result_df = pd.DataFrame()
+    result_df["SalesID"] = input_df["SalesID"]
+    result_df["SalesPrice"] = result
+    st.dataframe(pd.DataFrame(result_df))
+
+    st.download_button(
+        "Download",
+        convert_df(result_df),
+        "result.csv",
+        "text/csv")
+
+@st.cache
+def display_profile_report(df):
+    pr = ProfileReport(df)
+    st_profile_report(pr)
+
+
 
 def main():
+    choice = st.sidebar.radio("Select action:",
+                                  options=["Project Info", "Exploratory Data Analysis (EDA)", "Predict with ML model"])
 
-    small_model = pickle.load(open("./model/small_model.pkl", "rb"))
-    df = load_data()
+    if choice == "Project Info":
+        project_info_text()
 
-    # Predict with test data
-    st.write("### Predicting with test data")
-    st.dataframe(df.head(1))
-    if st.button("Predict test"):
-       df_test = preprocess_data(df)
-       result = small_model.predict(df_test.head(1))
-       st.success(f"Predicted Sales Price: ${result[0]:.2f}")
-    st.write("---")
-    st.write("### Predicting with your own data")
-    file_path = "./data/Test.csv"
+    if choice == "Exploratory Data Analysis (EDA)":
+        df = load_data()
+        display_profile_report(df)
 
-    # Predict with user data
-    with open(file_path, 'rb') as my_file:
-        st.download_button(label = 'Download sample CSV', data = my_file, file_name = 'sample.csv', mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    user_file = st.file_uploader("Upload a file containing your features")
-    if user_file:
-        user_df = load_data(user_file)
-        if st.button("Predict"):
-            proc_user_df = preprocess_data(user_df)
-            result = small_model.predict(proc_user_df)
-            result_df = pd.DataFrame()
-            result_df["SalesID"] = user_df["SalesID"]
-            result_df["SalesPrice"] = result
-            st.dataframe(pd.DataFrame(result_df))
+        st.write("---")
+    if choice == "Predict with ML model":
+        small_model = pickle.load(open("./model/small_model.pkl", "rb"))
+
+        df = load_data()
+
+        # Predict with test data
+        st.write("### Predicting with sample data")
+        st.dataframe(df.head(1))
+        if st.button("Predict with sample"):
+           result = small_model.predict(preprocess_data(df).head(1))
+           st.success(f"Predicted Sales Price: ${result[0]:.2f}")
+        st.write("---")
+
+        # Predict with user data
+        st.write("### Predicting with your own data")
+
+        def user_file_operation():
+
+            file_path = "./data/Test.csv"
+
+            with open(file_path, 'rb') as my_file:
+                st.download_button(label='Download sample CSV', data=my_file, file_name='sample.csv',
+                                   mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+            user_file = st.file_uploader("Upload a file containing your features")
+
+            if user_file:
+                user_df = load_data(user_file)
+                if st.button("Predict"):
+                    result = small_model.predict(preprocess_data(user_df))
+                    result_df_download(user_df, result)
+
+
+
+        user_file_operation()
 
 if __name__ == '__main__':
     main()
